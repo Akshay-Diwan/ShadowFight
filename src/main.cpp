@@ -7,29 +7,23 @@
 #include "renderer/Skeletion.h"
 #include "animation/Animation.h"
 #include "animation/AnimationPlayer.h"
+#include "animation/loader.h"
 
 int main()
 {
-    // --------------------------------------------------------
-    // GLFW
-    // --------------------------------------------------------
-
     if (!glfwInit())
     {
         std::cerr << "Failed to initialize GLFW\n";
         return -1;
     }
-
     glfwWindowHint(
         GLFW_CONTEXT_VERSION_MAJOR,
         3
     );
-
     glfwWindowHint(
         GLFW_CONTEXT_VERSION_MINOR,
         3
     );
-
     glfwWindowHint(
         GLFW_OPENGL_PROFILE,
         GLFW_OPENGL_CORE_PROFILE
@@ -53,27 +47,16 @@ int main()
 
     glfwMakeContextCurrent(window);
 
-
-    // --------------------------------------------------------
-    // GLAD
-    // --------------------------------------------------------
-
     if (!gladLoadGL((GLADloadfunc)glfwGetProcAddress))
     {
         std::cerr << "Failed to initialize GLAD\n";
         return -1;
     }
 
-
     std::cout
         << "OpenGL: "
         << glGetString(GL_VERSION)
         << '\n';
-
-
-    // --------------------------------------------------------
-    // Renderer
-    // --------------------------------------------------------
 
     Renderer renderer;
 
@@ -83,46 +66,13 @@ int main()
         return -1;
     }
 
-
-    // --------------------------------------------------------
-    // Mock animation
-    // --------------------------------------------------------
-
-    Animation mockAnimation;
-
-    AnimationFrame frame;
-
-    frame.nodes =
-    {
-        { 0.0f,  0.70f, 0.0f },
-        { 0.0f,  0.50f, 0.0f },
-        { 0.0f,  0.20f, 0.0f },
-        { 0.0f, -0.20f, 0.0f },
-
-        {-0.45f, 0.25f, 0.0f },
-        { 0.45f, 0.25f, 0.0f },
-
-        {-0.25f,-0.70f, 0.0f },
-        { 0.25f,-0.70f, 0.0f }
-    };
-
-    mockAnimation.frameCount = 1;
-
-    mockAnimation.frames.push_back(frame);
-
-
+    Animation animation = loadAnimation("C:/Users/AKSHAY/Desktop/ShadowFight/assets/Double_Punch.bin");
     AnimationPlayer player;
 
-    player.setAnimation(&mockAnimation);
+    player.setAnimation(&animation);
     player.play();
 
-
     Skeleton skeleton;
-
-
-    // --------------------------------------------------------
-    // Render loop
-    // --------------------------------------------------------
 
     while (!glfwWindowShouldClose(window))
     {
@@ -132,15 +82,10 @@ int main()
             0.05f,
             1.0f
         );
-
         glClear(GL_COLOR_BUFFER_BIT);
-
-
         player.update(1.0f / 60.0f);
-
         const AnimationFrame* currentFrame =
             player.getCurrentFrame();
-
 
         if (currentFrame)
         {
@@ -150,9 +95,7 @@ int main()
             );
         }
 
-
         glfwSwapBuffers(window);
-
         glfwPollEvents();
     }
 

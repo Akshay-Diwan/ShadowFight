@@ -3,6 +3,8 @@
 
 #include "animation/CharacterNodes.h"
 #include <vector>
+#include "map"
+#include "string"
 
 struct Bone
 {
@@ -13,7 +15,7 @@ struct Bone
 class Skeleton
 {
 public:
-    std::vector<Bone> bones;
+    std::map<std::string, std::vector<int>> bones;
 
     Skeleton();
 };
