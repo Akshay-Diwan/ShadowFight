@@ -22,6 +22,8 @@ file(GLOB_RECURSE RENDERER_SOURCES
 add_executable(ShadowFight
     src/main.cpp
     src/gl.c
+    src/PlayerState.cpp
+    src/CharacterAnimation.cpp
     ${ANIMATION_SOURCES}
     ${RENDERER_SOURCES}
 )

@@ -2,13 +2,8 @@
 
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
-
-#include "renderer/Renderer.h"
-#include "renderer/Skeletion.h"
-#include "animation/Animation.h"
-#include "animation/AnimationPlayer.h"
-#include "animation/loader.h"
 #include "renderer/BackgroundRenderer.h"
+#include "CharacterAnimation.h"
 
 int main()
 {
@@ -59,13 +54,8 @@ int main()
         << glGetString(GL_VERSION)
         << '\n';
 
-    Renderer renderer;
 
-    if (!renderer.initialize())
-    {
-        std::cerr << "Renderer initialization failed\n";
-        return -1;
-    }
+    
     BackgroundRenderer bgRenderer;
     if(!bgRenderer.initialize()){
         std::cerr << "BackgroundRenderer initialization failed\n";
@@ -73,36 +63,18 @@ int main()
     }
 
 
-    Animation animation = loadAnimation("C:/Users/AKSHAY/Desktop/ShadowFight/assets/Double_Punch.bin");
-    AnimationPlayer player;
+    // Animation animation = loadAnimation("C:/Users/AKSHAY/Desktop/ShadowFight/assets/Double_Punch.bin");
+    // AnimationPlayer player;
 
-    player.setAnimation(&animation);
-    player.play();
+    // player.setAnimation(&animation);
+    // player.play();
 
-    Skeleton skeleton;
-
+    // Skeleton skeleton;
+    CharacterAnimation playerAnimation(window);
     while (!glfwWindowShouldClose(window))
     {
         bgRenderer.render("C:/Users/AKSHAY/Desktop/ShadowFight/assets/background.png");
-        // glClearColor(
-        //     0.05f,
-        //     0.05f,
-        //     0.05f,
-        //     1.0f
-        // );
-        // glClear(GL_COLOR_BUFFER_BIT);
-        player.update(1.0f / 60.0f);
-        const AnimationFrame* currentFrame =
-            player.getCurrentFrame();
-
-        if (currentFrame)
-        {
-            renderer.renderFrame(
-                *currentFrame,
-                skeleton
-            );
-        }
-
+        playerAnimation.updateFrame();
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
