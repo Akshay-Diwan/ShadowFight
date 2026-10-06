@@ -37,12 +37,12 @@ bool Renderer::initialize()
 {
     capsuleShader.use();
    glm::vec3 cameraPos(
-        280.0f, -600.0f, 120.0f
+        280.0f, -900.0f, 280.0f
     );
     glm::vec3 target(
         280.0f,
         -70.0f,
-        120.0f
+        280.0f
     );
     glm::vec3 up(
         0.0f,
@@ -133,7 +133,8 @@ void Renderer::renderFrame(
     const Skeleton& skeleton
 )
 {
-    capsuleShader.setVec3("uColor", 1.0f, 1.0f, 1.0f);
+    capsuleShader.use();
+    capsuleShader.setVec3("uColor", 0.0f, 0.0f, 0.0f);
     glBindVertexArray(vao);
     
     

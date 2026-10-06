@@ -8,6 +8,7 @@
 #include "animation/Animation.h"
 #include "animation/AnimationPlayer.h"
 #include "animation/loader.h"
+#include "renderer/BackgroundRenderer.h"
 
 int main()
 {
@@ -65,6 +66,12 @@ int main()
         std::cerr << "Renderer initialization failed\n";
         return -1;
     }
+    BackgroundRenderer bgRenderer;
+    if(!bgRenderer.initialize()){
+        std::cerr << "BackgroundRenderer initialization failed\n";
+        return -1;
+    }
+
 
     Animation animation = loadAnimation("C:/Users/AKSHAY/Desktop/ShadowFight/assets/Double_Punch.bin");
     AnimationPlayer player;
@@ -76,13 +83,14 @@ int main()
 
     while (!glfwWindowShouldClose(window))
     {
-        glClearColor(
-            0.05f,
-            0.05f,
-            0.05f,
-            1.0f
-        );
-        glClear(GL_COLOR_BUFFER_BIT);
+        bgRenderer.render("C:/Users/AKSHAY/Desktop/ShadowFight/assets/background.png");
+        // glClearColor(
+        //     0.05f,
+        //     0.05f,
+        //     0.05f,
+        //     1.0f
+        // );
+        // glClear(GL_COLOR_BUFFER_BIT);
         player.update(1.0f / 60.0f);
         const AnimationFrame* currentFrame =
             player.getCurrentFrame();
