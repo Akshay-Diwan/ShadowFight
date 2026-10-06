@@ -2,6 +2,8 @@
 #include "CharacterState.h"
 #include "GLFW/glfw3.h"
 #include "iostream"
+#include <thread>
+#include <chrono>
 PlayerState::PlayerState(GLFWwindow* window)
 :
 currentState(IDLE),
@@ -19,7 +21,14 @@ bool PlayerState::isKeyPress(){
     {
         std::cout << "Key Pressed" << std::endl;
         currentState = DOUBLE_PUNCH;
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
         return true;
     }
     else false;
+}
+void PlayerState::trial_thread(std::stop_token stopToken){
+    
+    while (!glfwWindowShouldClose(window) && !stopToken.stop_requested()){
+        isKeyPress();
+    }
 }

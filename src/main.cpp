@@ -4,7 +4,7 @@
 #include <GLFW/glfw3.h>
 #include "renderer/BackgroundRenderer.h"
 #include "CharacterAnimation.h"
-
+#include "thread"
 int main()
 {
     if (!glfwInit())
@@ -62,15 +62,12 @@ int main()
         return -1;
     }
 
-
-    // Animation animation = loadAnimation("C:/Users/AKSHAY/Desktop/ShadowFight/assets/Double_Punch.bin");
-    // AnimationPlayer player;
-
-    // player.setAnimation(&animation);
-    // player.play();
-
-    // Skeleton skeleton;
     CharacterAnimation playerAnimation(window);
+    PlayerState playerState(window);
+    std::jthread t1([&playerState](std::stop_token st) {
+    playerState.trial_thread(st);
+    });
+
     while (!glfwWindowShouldClose(window))
     {
         bgRenderer.render("C:/Users/AKSHAY/Desktop/ShadowFight/assets/background.png");
@@ -79,7 +76,7 @@ int main()
         glfwPollEvents();
     }
 
-
+    t1.request_stop();
     glfwDestroyWindow(window);
 
     glfwTerminate();
