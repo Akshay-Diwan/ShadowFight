@@ -12,7 +12,7 @@
 
 class CharacterAnimation{
     public:
-        CharacterAnimation(GLFWwindow* window);
+        CharacterAnimation(GLFWwindow* window, PlayerState* playerState);
         void updateFrame();
         
         private:
@@ -21,7 +21,7 @@ class CharacterAnimation{
         void handleACTIVE();
         
         GLFWwindow* window;
-        PlayerState playerState;
+        PlayerState* playerState;
         std::map<CharacterState, Animation> animationMap;
         AnimationPlayer player;
         AnimationFrame idleFrame;

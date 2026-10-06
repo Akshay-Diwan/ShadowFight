@@ -62,8 +62,8 @@ int main()
         return -1;
     }
 
-    CharacterAnimation playerAnimation(window);
     PlayerState playerState(window);
+    CharacterAnimation playerAnimation(window, &playerState);
     std::jthread t1([&playerState](std::stop_token st) {
     playerState.trial_thread(st);
     });

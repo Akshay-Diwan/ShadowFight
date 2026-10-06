@@ -1,8 +1,10 @@
 #include "animation/loader.h"
 #include "CharacterAnimation.h"
 #include "iostream"
-CharacterAnimation::CharacterAnimation(GLFWwindow* window)
-: playerState(window)
+CharacterAnimation::CharacterAnimation(GLFWwindow* window, PlayerState* playerState)
+: 
+playerState(playerState),
+window(window)
 {
     if (!renderer.initialize())
     {
@@ -31,16 +33,16 @@ void CharacterAnimation::setAnimation(CharacterState state){
 
 void CharacterAnimation::updateFrame(){
     handleIDLE();
-    // if(playerState.isStateChanged()){
-    //     setAnimation(playerState.getState());
-    // }
-    // CharacterState state = playerState.getState();
-    // if(state == IDLE){
-    //     handleIDLE();
-    // }
-    // else {
-    //     handleACTIVE();
-    // }
+    if(playerState->isStateChanged()){
+        setAnimation(playerState->getState());
+    }
+    CharacterState state = playerState->getState();
+    if(state == IDLE){
+        handleIDLE();
+    }
+    else {
+        handleACTIVE();
+    }
 }
 void CharacterAnimation::handleIDLE(){
     renderer.renderFrame(

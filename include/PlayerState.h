@@ -13,7 +13,7 @@ class PlayerState{
     void  trial_thread(std::stop_token stopToken);
     private:
     bool isKeyPress();
-    CharacterState currentState;
+    std::atomic<CharacterState> currentState{IDLE};
     GLFWwindow* window;
 };
 
