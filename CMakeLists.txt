@@ -27,6 +27,7 @@ add_executable(ShadowFight
     ${ANIMATION_SOURCES}
     ${RENDERER_SOURCES}
 )
+target_compile_definitions(ShadowFight PRIVATE GLM_ENABLE_EXPERIMENTAL)
 
 target_include_directories(ShadowFight PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include

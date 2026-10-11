@@ -6,10 +6,6 @@ CharacterAnimation::CharacterAnimation(GLFWwindow* window, PlayerState* playerSt
 playerState(playerState),
 window(window)
 {
-    if (!renderer.initialize())
-    {
-        std::cerr << "Renderer initialization failed\n";
-    }
     Animation animation = loadAnimation("C:/Users/AKSHAY/Desktop/ShadowFight/assets/Double_Punch.bin");
     animationMap[DOUBLE_PUNCH] = animation;
     idleFrame = animation.frames[0];
@@ -18,7 +14,10 @@ window(window)
           << std::endl;
           
     std::cout << skeleton.bones.size() << std::endl;
-
+    if (!renderer.initialize(idleFrame, skeleton))
+    {
+        std::cerr << "Renderer initialization failed\n";
+    }
 };
 void CharacterAnimation::setAnimation(CharacterState state){
     auto it = animationMap.find(state);
@@ -32,7 +31,6 @@ void CharacterAnimation::setAnimation(CharacterState state){
 }
 
 void CharacterAnimation::updateFrame(){
-    handleIDLE();
     if(playerState->isStateChanged()){
         setAnimation(playerState->getState());
     }

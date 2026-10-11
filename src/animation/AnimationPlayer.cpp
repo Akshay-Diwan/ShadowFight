@@ -67,6 +67,7 @@ void AnimationPlayer::update(float deltaTime)
 
         if (currentFrame >= animation->frameCount)
         {
+            stop();
             currentFrame = 0;
         }
     }

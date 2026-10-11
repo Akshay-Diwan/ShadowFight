@@ -70,6 +70,7 @@ int main()
 
     while (!glfwWindowShouldClose(window))
     {
+
         bgRenderer.render("C:/Users/AKSHAY/Desktop/ShadowFight/assets/background.png");
         playerAnimation.updateFrame();
         glfwSwapBuffers(window);
