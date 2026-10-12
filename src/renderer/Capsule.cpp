@@ -117,8 +117,8 @@ void Capsule::createMesh(
     // Cylinder endpoints: actual coordinates
     // ------------------------------------------------------------
 
-    glm::vec3 center1 = p1;
-    glm::vec3 center2 = p2;
+    glm::vec3 center1 = p1 + (margin1 * direction);
+    glm::vec3 center2 = p2 - (margin2 * direction);
 
     auto addVertex = [&](const glm::vec3& position,
                          const glm::vec3& normal)
@@ -198,7 +198,7 @@ void Capsule::createMesh(
                 mesh.idleAxis * std::sin(phi);
 
             glm::vec3 position =
-                p1 + radial * r + mesh.idleAxis * axial;
+                center1 + radial * r + mesh.idleAxis * axial;
 
             addVertex(position, normal);
         }
@@ -253,7 +253,7 @@ void Capsule::createMesh(
                 mesh.idleAxis * std::sin(phi);
 
             glm::vec3 position =
-                p2 + radial * r + mesh.idleAxis * axial;
+                center2 + radial * r + mesh.idleAxis * axial;
 
             addVertex(position, normal);
         }
