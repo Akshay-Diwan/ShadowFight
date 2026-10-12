@@ -70,55 +70,58 @@ void Capsule::initializeBuffers()
 
     glBindVertexArray(0);
 }
+
 void Capsule::createMesh(
-        const glm::vec3& p1,
-        const glm::vec3& p2,
-        int radialSegments,
-        int hemisphereRings
-){
-    // ------------------------------------------------------------
-    // Get capsule length from original node positions
-    // ------------------------------------------------------------
-    const float& m1 = margin1;
-    const float& m2 = margin2;
-    const float& hemisphereRadius = radius1;
-    const float& cylinderRadius = radius1;
+    const glm::vec3& p1,
+    const glm::vec3& p2,
+    int radialSegments,
+    int hemisphereRings
+)
+{
+    if (radialSegments < 3 || hemisphereRings < 1)
+        return;
+    idleP1 = p1;
+    idleP2 = p2;
+    const float hemisphereRadius = radius1;
+    const float cylinderRadius = radius1;
 
-    glm::vec3 originalAxis = p2 - p1;
+    // ------------------------------------------------------------
+    // Actual world-space center and axis
+    // ------------------------------------------------------------
 
-    float length = glm::length(originalAxis);
+    glm::vec3 direction = p2 - p1;
+    float length = glm::length(direction);
+
     if (length < 0.0001f)
         return;
-    // ------------------------------------------------------------
-    // LOCAL COORDINATE SYSTEM
-    // ------------------------------------------------------------
 
-    glm::vec3 w(0.0f, 1.0f, 0.0f);
-
-    // Choose perpendicular axes
-    glm::vec3 u(1.0f, 0.0f, 0.0f);
-    glm::vec3 v(0.0f, 0.0f, 1.0f);
-
-    // Local endpoints
-    glm::vec3 localP1(
-        0.0f,
-        -length * 0.5f,
-        0.0f
-    );
-
-    glm::vec3 localP2(
-        0.0f,
-        length * 0.5f,
-        0.0f
-    );
+    mesh.idleCenter = (p1 + p2) * 0.5f;
+    mesh.idleAxis = direction / length;
 
     // ------------------------------------------------------------
-    // Helper: add a vertex
+    // Build perpendicular vectors around the actual axis
     // ------------------------------------------------------------
 
-    auto addVertex =
-        [&](const glm::vec3& position,
-            const glm::vec3& normal)
+    glm::vec3 reference =
+        (std::abs(glm::dot(mesh.idleAxis, glm::vec3(0, 1, 0))) < 0.99f)
+        ? glm::vec3(0, 1, 0)
+        : glm::vec3(1, 0, 0);
+
+    glm::vec3 u =
+        glm::normalize(glm::cross(reference, mesh.idleAxis));
+
+    glm::vec3 v =
+        glm::normalize(glm::cross(mesh.idleAxis, u));
+
+    // ------------------------------------------------------------
+    // Cylinder endpoints: actual coordinates
+    // ------------------------------------------------------------
+
+    glm::vec3 center1 = p1;
+    glm::vec3 center2 = p2;
+
+    auto addVertex = [&](const glm::vec3& position,
+                         const glm::vec3& normal)
     {
         mesh.vertices.push_back({
             position,
@@ -127,115 +130,64 @@ void Capsule::createMesh(
     };
 
     // ------------------------------------------------------------
-    // Cylinder
+    // Cylinder rings
     // ------------------------------------------------------------
 
     unsigned int cylinderStart =
-        static_cast<unsigned int>(
-            mesh.vertices.size()
-        );
+        static_cast<unsigned int>(mesh.vertices.size());
 
-    glm::vec3 direction =
-        localP2 - localP1;
-
-    glm::vec3 center1 =
-        localP1 + (m1 * direction);
-
-    glm::vec3 center2 =
-        localP2 - (m2 * direction);
-
-    for (int ring = 0; ring <= 1; ring++)
+    for (int ring = 0; ring <= 1; ++ring)
     {
-        glm::vec3 center =
-            ring == 0 ? center1 : center2;
+        glm::vec3 center = (ring == 0) ? center1 : center2;
 
-        for (int i = 0; i < radialSegments; i++)
+        for (int i = 0; i < radialSegments; ++i)
         {
             float theta =
-                2.0f * glm::pi<float>() *
-                static_cast<float>(i) /
-                static_cast<float>(radialSegments);
+                2.0f * glm::pi<float>() * i / radialSegments;
 
             glm::vec3 radial =
                 std::cos(theta) * u +
                 std::sin(theta) * v;
 
             glm::vec3 position =
-                center +
-                radial * cylinderRadius;
+                center + radial * cylinderRadius;
 
             addVertex(position, radial);
         }
     }
 
-    // ------------------------------------------------------------
-    // Connect cylinder rings
-    // ------------------------------------------------------------
-
-    for (int i = 0; i < radialSegments; i++)
+    for (int i = 0; i < radialSegments; ++i)
     {
-        int next =
-            (i + 1) % radialSegments;
+        int next = (i + 1) % radialSegments;
 
-        unsigned int a =
-            cylinderStart + i;
+        unsigned int a = cylinderStart + i;
+        unsigned int b = cylinderStart + next;
+        unsigned int c = cylinderStart + radialSegments + next;
+        unsigned int d = cylinderStart + radialSegments + i;
 
-        unsigned int b =
-            cylinderStart + next;
-
-        unsigned int c =
-            cylinderStart +
-            radialSegments +
-            next;
-
-        unsigned int d =
-            cylinderStart +
-            radialSegments +
-            i;
-
-        mesh.indices.push_back(a);
-        mesh.indices.push_back(b);
-        mesh.indices.push_back(c);
-
-        mesh.indices.push_back(a);
-        mesh.indices.push_back(c);
-        mesh.indices.push_back(d);
+        mesh.indices.insert(mesh.indices.end(),
+            { a, b, c, a, c, d });
     }
 
     // ------------------------------------------------------------
-    // Hemisphere at local P1
+    // Hemisphere at p1, extending opposite to the axis
     // ------------------------------------------------------------
 
     unsigned int bottomStart =
-        static_cast<unsigned int>(
-            mesh.vertices.size()
-        );
+        static_cast<unsigned int>(mesh.vertices.size());
 
-    for (int ring = 0;
-         ring <= hemisphereRings;
-         ring++)
+    for (int ring = 0; ring <= hemisphereRings; ++ring)
     {
         float phi =
-            glm::half_pi<float>() *
-            static_cast<float>(ring) /
-            static_cast<float>(hemisphereRings);
+            glm::half_pi<float>() * ring / hemisphereRings;
 
-        float radialAmount =
-            std::cos(phi) *
-            hemisphereRadius;
+        float r = std::cos(phi) * hemisphereRadius;
+        float axial = -std::sin(phi) * hemisphereRadius;
 
-        float axialAmount =
-            -std::sin(phi) *
-            hemisphereRadius;
-
-        for (int i = 0;
-             i < radialSegments;
-             i++)
+        for (int i = 0; i < radialSegments; ++i)
         {
             float theta =
-                2.0f * glm::pi<float>() *
-                static_cast<float>(i) /
-                static_cast<float>(radialSegments);
+                2.0f * glm::pi<float>() * i / radialSegments;
 
             glm::vec3 radial =
                 std::cos(theta) * u +
@@ -243,96 +195,54 @@ void Capsule::createMesh(
 
             glm::vec3 normal =
                 radial * std::cos(phi) -
-                w * std::sin(phi);
+                mesh.idleAxis * std::sin(phi);
 
             glm::vec3 position =
-                center1 +
-                radial * radialAmount +
-                w * axialAmount;
+                p1 + radial * r + mesh.idleAxis * axial;
 
             addVertex(position, normal);
         }
     }
 
-    // ------------------------------------------------------------
-    // Connect bottom hemisphere
-    // ------------------------------------------------------------
-
-    for (int ring = 0;
-         ring < hemisphereRings;
-         ring++)
+    for (int ring = 0; ring < hemisphereRings; ++ring)
     {
-        for (int i = 0;
-             i < radialSegments;
-             i++)
+        for (int i = 0; i < radialSegments; ++i)
         {
-            int next =
-                (i + 1) % radialSegments;
+            int next = (i + 1) % radialSegments;
 
             unsigned int a =
-                bottomStart +
-                ring * radialSegments +
-                i;
-
+                bottomStart + ring * radialSegments + i;
             unsigned int b =
-                bottomStart +
-                ring * radialSegments +
-                next;
-
+                bottomStart + ring * radialSegments + next;
             unsigned int c =
-                bottomStart +
-                (ring + 1) * radialSegments +
-                next;
-
+                bottomStart + (ring + 1) * radialSegments + next;
             unsigned int d =
-                bottomStart +
-                (ring + 1) * radialSegments +
-                i;
+                bottomStart + (ring + 1) * radialSegments + i;
 
-            mesh.indices.push_back(a);
-            mesh.indices.push_back(b);
-            mesh.indices.push_back(c);
-
-            mesh.indices.push_back(a);
-            mesh.indices.push_back(c);
-            mesh.indices.push_back(d);
+            mesh.indices.insert(mesh.indices.end(),
+                { a, b, c, a, c, d });
         }
     }
 
     // ------------------------------------------------------------
-    // Hemisphere at local P2
+    // Hemisphere at p2, extending along the axis
     // ------------------------------------------------------------
 
     unsigned int topStart =
-        static_cast<unsigned int>(
-            mesh.vertices.size()
-        );
+        static_cast<unsigned int>(mesh.vertices.size());
 
-    for (int ring = 0;
-         ring <= hemisphereRings;
-         ring++)
+    for (int ring = 0; ring <= hemisphereRings; ++ring)
     {
         float phi =
-            glm::half_pi<float>() *
-            static_cast<float>(ring) /
-            static_cast<float>(hemisphereRings);
+            glm::half_pi<float>() * ring / hemisphereRings;
 
-        float radialAmount =
-            std::cos(phi) *
-            hemisphereRadius;
+        float r = std::cos(phi) * hemisphereRadius;
+        float axial = std::sin(phi) * hemisphereRadius;
 
-        float axialAmount =
-            std::sin(phi) *
-            hemisphereRadius;
-
-        for (int i = 0;
-             i < radialSegments;
-             i++)
+        for (int i = 0; i < radialSegments; ++i)
         {
             float theta =
-                2.0f * glm::pi<float>() *
-                static_cast<float>(i) /
-                static_cast<float>(radialSegments);
+                2.0f * glm::pi<float>() * i / radialSegments;
 
             glm::vec3 radial =
                 std::cos(theta) * u +
@@ -340,101 +250,64 @@ void Capsule::createMesh(
 
             glm::vec3 normal =
                 radial * std::cos(phi) +
-                w * std::sin(phi);
+                mesh.idleAxis * std::sin(phi);
 
             glm::vec3 position =
-                localP2 +
-                radial * radialAmount +
-                w * axialAmount;
+                p2 + radial * r + mesh.idleAxis * axial;
 
             addVertex(position, normal);
         }
     }
 
-    // ------------------------------------------------------------
-    // Connect top hemisphere
-    // ------------------------------------------------------------
-
-    for (int ring = 0;
-         ring < hemisphereRings;
-         ring++)
+    for (int ring = 0; ring < hemisphereRings; ++ring)
     {
-        for (int i = 0;
-             i < radialSegments;
-             i++)
+        for (int i = 0; i < radialSegments; ++i)
         {
-            int next =
-                (i + 1) % radialSegments;
+            int next = (i + 1) % radialSegments;
 
             unsigned int a =
-                topStart +
-                ring * radialSegments +
-                i;
-
+                topStart + ring * radialSegments + i;
             unsigned int b =
-                topStart +
-                ring * radialSegments +
-                next;
-
+                topStart + ring * radialSegments + next;
             unsigned int c =
-                topStart +
-                (ring + 1) * radialSegments +
-                next;
-
+                topStart + (ring + 1) * radialSegments + next;
             unsigned int d =
-                topStart +
-                (ring + 1) * radialSegments +
-                i;
+                topStart + (ring + 1) * radialSegments + i;
 
-            mesh.indices.push_back(a);
-            mesh.indices.push_back(c);
-            mesh.indices.push_back(b);
-
-            mesh.indices.push_back(a);
-            mesh.indices.push_back(d);
-            mesh.indices.push_back(c);
+            mesh.indices.insert(mesh.indices.end(),
+                { a, c, b, a, d, c });
         }
     }
 }
 
+
+
 void Capsule::transformMesh(
-        const glm::vec3& newP1,
-        const glm::vec3& newP2
+    const glm::vec3& newP1,
+    const glm::vec3& newP2
 )
 {
     glm::vec3 newAxis = newP2 - newP1;
-
     float length = glm::length(newAxis);
 
     if (length < 0.0001f)
         return;
 
-    newAxis = glm::normalize(newAxis);
+    newAxis /= length;
 
+    glm::vec3 newCenter = (newP1 + newP2) * 0.5f;
 
-    glm::vec3 newCenter =
-        (newP1 + newP2) * 0.5f;
-
-
-    glm::vec3 originalAxis(
-        0.0f,
-        1.0f,
-        0.0f
+    // Rotation from the original axis to the new axis
+    glm::quat rotation = glm::rotation(
+        mesh.idleAxis,
+        newAxis
     );
 
-    glm::quat rotation =
-        glm::rotation(
-            originalAxis,
-            newAxis
-        );
+    glm::mat4 rotationMatrix = glm::mat4_cast(rotation);
 
-    // Move capsule to the new center
-    transform = glm::mat4(1.0f);
+    // Rotate around the original center, then move to newCenter
     transform =
-        glm::translate(
-            transform,
-            newCenter
-        );
-    // Rotate capsule
-    transform *= glm::mat4_cast(rotation);
+        glm::translate(glm::mat4(1.0f), newCenter) *
+        rotationMatrix *
+        glm::translate(glm::mat4(1.0f), -mesh.idleCenter);
 }

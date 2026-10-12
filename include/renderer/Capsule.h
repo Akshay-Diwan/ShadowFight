@@ -22,12 +22,15 @@ struct CapsuleMesh
     GLuint VBO;
     GLuint EBO;
 
-    glm::vec3 axis;
+    glm::vec3 idleAxis;
+    glm::vec3 idleCenter;
 };
 
 class Capsule
 {
 public:
+    glm::vec3 idleP1;
+    glm::vec3 idleP2;
     float radius1;
     float radius2;
 
