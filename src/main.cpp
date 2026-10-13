@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 #include "renderer/BackgroundRenderer.h"
 #include "CharacterAnimation.h"
+#include "PlayerState.h"
 #include "thread"
 int main()
 {
@@ -61,22 +62,21 @@ int main()
         std::cerr << "BackgroundRenderer initialization failed\n";
         return -1;
     }
-
-    PlayerState playerState(window);
-    CharacterAnimation playerAnimation(window, &playerState);
+    AnimationPlayer player;
+    CharacterAnimation playerAnimation(window, &player);
+    PlayerState playerState(window, &player, &playerAnimation);
     std::jthread t1([&playerState](std::stop_token st) {
     playerState.trial_thread(st);
     });
 
     while (!glfwWindowShouldClose(window))
     {
-
         bgRenderer.render("C:/Users/AKSHAY/Desktop/ShadowFight/assets/background.png");
         playerAnimation.updateFrame();
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-
+    std::cout << "Main loop ended\n";
     t1.request_stop();
     glfwDestroyWindow(window);
 

@@ -42,6 +42,9 @@ void AnimationPlayer::stop()
     currentFrame = 0;
     frameTimer = 0.0f;
 }
+bool AnimationPlayer::isPlaying(){
+    return playing;
+}
 
 
 void AnimationPlayer::update(float deltaTime)
@@ -68,7 +71,8 @@ void AnimationPlayer::update(float deltaTime)
         if (currentFrame >= animation->frameCount)
         {
             stop();
-            currentFrame = 0;
+            currentFrame = animation->frameCount - 1;
+            // currentFrame = 0;
         }
     }
 }

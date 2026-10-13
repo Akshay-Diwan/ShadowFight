@@ -1,7 +1,7 @@
 #pragma once
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
-#include "PlayerState.h"
+#include "CharacterState.h"
 #include "map"
 #include "animation/Animation.h"
 #include  "animation/AnimationPlayer.h"
@@ -12,20 +12,20 @@
 
 class CharacterAnimation{
     public:
-        CharacterAnimation(GLFWwindow* window, PlayerState* playerState);
+        CharacterAnimation(GLFWwindow* window, AnimationPlayer* player);
         void updateFrame();
-        
-        private:
+        void setIdle(const AnimationFrame& frame);
         void setAnimation(CharacterState state);
+
+        private:
         void handleIDLE();
         void handleACTIVE();
         
         GLFWwindow* window;
-        PlayerState* playerState;
         std::map<CharacterState, Animation> animationMap;
-        AnimationPlayer player;
+        AnimationPlayer* player;
         AnimationFrame idleFrame;
         Skeleton skeleton;
         Renderer renderer;
-
+        CharacterState state;
 };

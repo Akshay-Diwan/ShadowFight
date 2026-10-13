@@ -68,11 +68,15 @@ void Renderer::initialRender(
     for(Capsule& capsule: capsules){
         auto it = skeleton.bones.find(capsule.edgeName);
         if(it == skeleton.bones.end()) continue;
+        std::cout << "Fetch node position" << std::endl;
         const NodePosition& node1 = idleFrame.nodes[it->second[0]];
         const NodePosition& node2 = idleFrame.nodes[it->second[1]];
+        std::cout << "node position fetched!" << std::endl;
+
         glm::vec3 p1(node1.x, node1.y, node1.z);
         glm::vec3 p2(node2.x, node2.y, node2.z);
         capsule.createMesh(p1, p2);
+        std::cout << "Mesh created!" << std::endl;
         capsule.initializeBuffers();
     }
 }

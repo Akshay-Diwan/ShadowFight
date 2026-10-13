@@ -17,6 +17,7 @@ public:
     void stop();
 
     void update(float deltaTime);
+    bool isPlaying();
 
     const AnimationFrame* getCurrentFrame() const;
 

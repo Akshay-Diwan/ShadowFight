@@ -1,15 +1,16 @@
 #include "animation/loader.h"
 #include "CharacterAnimation.h"
 #include "iostream"
-CharacterAnimation::CharacterAnimation(GLFWwindow* window, PlayerState* playerState)
+#include "animation/AnimationPlayer.h"
+CharacterAnimation::CharacterAnimation(GLFWwindow* window, AnimationPlayer* player)
 : 
-playerState(playerState),
-window(window)
+window(window),
+player(player)
 {
     Animation animation = loadAnimation("C:/Users/AKSHAY/Desktop/ShadowFight/assets/Double_Punch.bin");
     animationMap[DOUBLE_PUNCH] = animation;
-    idleFrame = animation.frames[0];
-    std::cout << "Idle nodes: "
+    setIdle(animation.frames[0]);
+     std::cout << "Idle nodes: "
           << idleFrame.nodes.size()
           << std::endl;
           
@@ -19,22 +20,24 @@ window(window)
         std::cerr << "Renderer initialization failed\n";
     }
 };
+void CharacterAnimation::setIdle(const AnimationFrame& frame){
+    state = IDLE;
+    idleFrame = frame;
+}
 void CharacterAnimation::setAnimation(CharacterState state){
+    this->state = state;
     auto it = animationMap.find(state);
     if(it == animationMap.end()){
         std::cerr << "Animation not found in map";
         return;
     }
     const Animation& animation = it->second;
-    player.setAnimation(&animation);
-    player.play();
+    player->setAnimation(&animation);
+    player->play();
 }
 
 void CharacterAnimation::updateFrame(){
-    if(playerState->isStateChanged()){
-        setAnimation(playerState->getState());
-    }
-    CharacterState state = playerState->getState();
+    // handleIDLE();
     if(state == IDLE){
         handleIDLE();
     }
@@ -49,9 +52,9 @@ void CharacterAnimation::handleIDLE(){
     );
 }
 void CharacterAnimation::handleACTIVE(){
-    player.update(1.0f / 60.0f);
+    player->update(1.0f / 60.0f);
     const AnimationFrame* currentFrame =
-        player.getCurrentFrame();
+        player->getCurrentFrame();
         if (currentFrame)
         {
             renderer.renderFrame(
