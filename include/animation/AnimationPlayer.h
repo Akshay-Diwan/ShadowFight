@@ -20,6 +20,7 @@ public:
     bool isPlaying();
 
     const AnimationFrame* getCurrentFrame() const;
+    const AnimationFrame* setCurrentAsIdle();
 
 private:
 

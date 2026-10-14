@@ -7,9 +7,9 @@ CharacterAnimation::CharacterAnimation(GLFWwindow* window, AnimationPlayer* play
 window(window),
 player(player)
 {
-    Animation animation = loadAnimation("C:/Users/AKSHAY/Desktop/ShadowFight/assets/Double_Punch.bin");
+    setIdle(loadInitialIdleFrame());
+    Animation animation = loadAnimation("C:/Users/AKSHAY/Desktop/ShadowFight/assets/Double_Punch.bin", idleFrame);
     animationMap[DOUBLE_PUNCH] = animation;
-    setIdle(animation.frames[0]);
      std::cout << "Idle nodes: "
           << idleFrame.nodes.size()
           << std::endl;
@@ -23,6 +23,9 @@ player(player)
 void CharacterAnimation::setIdle(const AnimationFrame& frame){
     state = IDLE;
     idleFrame = frame;
+}
+AnimationFrame CharacterAnimation::getIdle(){
+    return idleFrame;
 }
 void CharacterAnimation::setAnimation(CharacterState state){
     this->state = state;
@@ -46,9 +49,14 @@ void CharacterAnimation::updateFrame(){
     }
 }
 void CharacterAnimation::handleIDLE(){
+    // renderer.renderIdleFrame(
+    //     skeleton,
+    //     idleFrame
+    // );
     renderer.renderFrame(
-        idleFrame,
-        skeleton
+        animationMap[DOUBLE_PUNCH].frames[0],
+        skeleton,
+        idleFrame
     );
 }
 void CharacterAnimation::handleACTIVE(){
@@ -59,7 +67,8 @@ void CharacterAnimation::handleACTIVE(){
         {
             renderer.renderFrame(
                 *currentFrame,
-                skeleton
+                skeleton,
+                idleFrame
             );
         }
 }

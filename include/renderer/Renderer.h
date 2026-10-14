@@ -20,10 +20,14 @@ public:
         const AnimationFrame& frame,
         const Skeleton& skeleton
     );
-    
+    void renderIdleFrame(
+        const Skeleton& skeletion,
+        const AnimationFrame& idleFrame
+    );
     void renderFrame(
         const AnimationFrame& frame,
-        const Skeleton& skeleton
+        const Skeleton& skeleton,
+        const AnimationFrame& idleFrame
     );
     void initialRender(
         const AnimationFrame& idleFrame,

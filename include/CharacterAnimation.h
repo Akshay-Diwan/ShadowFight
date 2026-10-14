@@ -16,7 +16,7 @@ class CharacterAnimation{
         void updateFrame();
         void setIdle(const AnimationFrame& frame);
         void setAnimation(CharacterState state);
-
+        AnimationFrame getIdle();
         private:
         void handleIDLE();
         void handleACTIVE();

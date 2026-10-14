@@ -7,6 +7,7 @@
 #include <chrono>
 #include "CharacterAnimation.h"
 #include "animation/AnimationPlayer.h"
+#include "animation/loader.h"
 
 PlayerState::PlayerState(GLFWwindow* window, AnimationPlayer* player, CharacterAnimation* characterAnimator)
 :
@@ -48,10 +49,10 @@ void PlayerState::trial_thread(std::stop_token stopToken){
     while (!glfwWindowShouldClose(window) && !stopToken.stop_requested()){
         CharacterState state = currentState.load();
         if(state != IDLE){
-            // std::cout << "is playing: " << player->isPlaying() << std::endl;
             if(!player->isPlaying()){
                 currentState.store(IDLE);
-                characterAnimator->setIdle(*player->getCurrentFrame());
+                AnimationFrame newIdle = createAbsoluteFrame(characterAnimator->getIdle(), *player->getCurrentFrame());
+                characterAnimator->setIdle(newIdle);
             }
         }
         else {

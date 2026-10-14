@@ -80,10 +80,23 @@ void Renderer::initialRender(
         capsule.initializeBuffers();
     }
 }
-
+void Renderer::renderIdleFrame(
+    const Skeleton& skeleton,
+    const AnimationFrame& idleFrame
+){
+    AnimationFrame zeroFrame;
+    zeroFrame.nodes.reserve(idleFrame.nodes.size());
+    for(int i = 0; i < idleFrame.nodes.size(); i++){
+        NodePosition temp;
+        temp.x = 0; temp.y = 0; temp.z = 0;
+        zeroFrame.nodes.push_back(temp);
+    }
+    renderFrame(zeroFrame, skeleton, idleFrame);
+}
 void Renderer::renderFrame(
     const AnimationFrame& frame,
-    const Skeleton& skeleton)
+    const Skeleton& skeleton,
+    const AnimationFrame& idleFrame)
 {
     capsuleShader.use();
     for (Capsule& capsule : capsules)
@@ -95,12 +108,16 @@ void Renderer::renderFrame(
 
         const NodePosition& node1 =
             frame.nodes[it->second[0]];
+        const NodePosition& deltaNode1 =
+            idleFrame.nodes[it->second[0]];
 
         const NodePosition& node2 =
             frame.nodes[it->second[1]];
+        const NodePosition& deltaNode2 =
+            idleFrame.nodes[it->second[1]];
 
-        glm::vec3 p1(node1.x, node1.y, node1.z);
-        glm::vec3 p2(node2.x, node2.y, node2.z);
+        glm::vec3 p1(node1.x + deltaNode1.x, node1.y + deltaNode1.y, node1.z + deltaNode1.z);
+        glm::vec3 p2(node2.x + deltaNode2.x, node2.y + deltaNode2.y, node2.z + deltaNode2.z);
 
         capsule.transformMesh(p1, p2);
         capsuleShader.setMat4("uModel", capsule.transform);
